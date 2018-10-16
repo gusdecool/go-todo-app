@@ -96,6 +96,32 @@ func Update(response http.ResponseWriter, request *http.Request) {
 	utility.HandleSuccessResponse(taskByte, response)
 }
 
+func Delete(response http.ResponseWriter, request *http.Request) {
+	parameters := mux.Vars(request)
+	taskId, err := strconv.Atoi(parameters["id"])
+
+	if err != nil {
+		utility.HandleErrorResponse(err, response)
+		return
+	}
+
+	taskModel, err := repo.GetOneById(taskId)
+
+	if err != nil {
+		utility.HandleErrorResponse(err, response)
+		return
+	}
+
+	err = repo.Delete(&taskModel)
+
+	if err != nil {
+		utility.HandleErrorResponse(err, response)
+		return
+	}
+
+	utility.HandleSuccessEmptyResponse(response)
+}
+
 func decode(request *http.Request) (model.Task, error) {
 	var taskModel model.Task
 	err := json.NewDecoder(request.Body).Decode(&taskModel)

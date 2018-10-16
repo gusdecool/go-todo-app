@@ -7,3 +7,4 @@ TODO
 ---
 
 1. How to handle `error` in cleaner way
+2. Add log

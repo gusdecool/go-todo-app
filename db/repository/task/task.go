@@ -33,7 +33,7 @@ func GetOneById(id int) (model.Task, error) {
 	}
 
 	if db.First(&task, id).RowsAffected == 0 {
-		return task, errors.New(fmt.Sprintf("can't find user with id %d", id))
+		return task, errors.New(fmt.Sprintf("can't find task with id %d", id))
 	}
 
 	return task, nil
