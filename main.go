@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gusdecool/go-todo-app/db/migration"
+	"github.com/gusdecool/go-todo-app/http/router"
 )
 
 func main() {
@@ -19,5 +20,5 @@ func main() {
 		}
 	}
 
-	//router.Register()
+	router.Register()
 }
