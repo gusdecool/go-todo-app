@@ -2,15 +2,17 @@ package task
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/gusdecool/go-todo-app/db/model"
-	"github.com/gusdecool/go-todo-app/db/repository/task"
+	repo "github.com/gusdecool/go-todo-app/db/repository/task"
 	"github.com/gusdecool/go-todo-app/http/utility"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 func List(response http.ResponseWriter, request *http.Request) {
-	tasks, err := task.FindAll()
+	tasks, err := repo.FindAll()
 
 	if err != nil {
 		utility.HandleErrorResponse(err, response)
@@ -24,22 +26,19 @@ func List(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	response.Header().Set("Content-Type", "application/json")
-	response.Write(tasksByte)
+	utility.HandleSuccessResponse(tasksByte, response)
 }
 
 func Create(response http.ResponseWriter, request *http.Request) {
-	var taskModel model.Task
+	taskModel, err := decode(request)
 	taskModel.CreatedAt = time.Now()
-
-	err := json.NewDecoder(request.Body).Decode(&taskModel)
 
 	if err != nil {
 		utility.HandleErrorResponse(err, response)
 		return
 	}
 
-	_, err = task.Create(&taskModel)
+	_, err = repo.Create(&taskModel)
 
 	if err != nil {
 		utility.HandleErrorResponse(err, response)
@@ -53,6 +52,53 @@ func Create(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	response.Header().Set("Content-Type", "application/json")
-	response.Write(taskByte)
+	utility.HandleSuccessResponse(taskByte, response)
+}
+
+func Update(response http.ResponseWriter, request *http.Request) {
+	parameters := mux.Vars(request)
+	taskId, err := strconv.Atoi(parameters["id"])
+
+	if err != nil {
+		utility.HandleErrorResponse(err, response)
+		return
+	}
+
+	taskModel, err := repo.GetOneById(taskId)
+
+	if err != nil {
+		utility.HandleErrorResponse(err, response)
+		return
+	}
+
+	requestUpdateModel, err := decode(request)
+
+	if err != nil {
+		utility.HandleErrorResponse(err, response)
+		return
+	}
+
+	taskModel.Name = requestUpdateModel.Name
+	_, err = repo.Update(&taskModel)
+
+	if err != nil {
+		utility.HandleErrorResponse(err, response)
+		return
+	}
+
+	taskByte, err := json.Marshal(taskModel)
+
+	if err != nil {
+		utility.HandleErrorResponse(err, response)
+		return
+	}
+
+	utility.HandleSuccessResponse(taskByte, response)
+}
+
+func decode(request *http.Request) (model.Task, error) {
+	var taskModel model.Task
+	err := json.NewDecoder(request.Body).Decode(&taskModel)
+
+	return taskModel, err
 }

@@ -74,3 +74,15 @@ func Update(task *model.Task) (*model.Task, error) {
 
 	return task, nil
 }
+
+func Delete(task *model.Task) error {
+	db, err := connector.Connect()
+
+	defer db.Close()
+
+	if err != nil {
+		return err
+	}
+
+	return db.Delete(task).Error
+}
